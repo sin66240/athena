@@ -1,0 +1,11 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "athena"
+version = "0.1.0"
+description = "ATHENA Poker Decision Engine"
+
+[tool.pytest.ini_options]
+pythonpath = "."
