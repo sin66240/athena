@@ -1,20 +1,35 @@
 import random
 
-from athena.agents.base import BaseAgent
+from athena.decision.interface import DecisionInterface
 
 
-class RandomAgent(BaseAgent):
-    """
-    Agent that selects actions randomly.
-    Used for simulation testing.
-    """
+class RandomAgent(DecisionInterface):
 
     ACTIONS = [
-        "FOLD",
-        "CHECK",
-        "CALL",
-        "BET",
+        "fold",
+        "call",
+        "raise",
     ]
 
+
+    def __init__(self, name):
+
+        self.name = name
+        self.history = []
+
+
+    def decide(self, state):
+
+        return self.decide_action(state)
+
+
     def decide_action(self, state):
-        return random.choice(self.ACTIONS)
+
+        return random.choice(
+            self.ACTIONS
+        )
+
+
+    def observe(self, data):
+
+        self.history.append(data)
