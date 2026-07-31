@@ -1,5 +1,6 @@
 from athena.core.deck import Deck
 from athena.core.hand import HandEvaluator
+from athena.state.game_state import GameState
 
 
 class PokerEnvironment:
@@ -9,20 +10,22 @@ class PokerEnvironment:
     """
 
     def __init__(self, players):
+
         self.players = players
         self.deck = None
-        self.hands = {}
-        self.winner = None
-        self.reward = {}
+        self.state = None
+
 
     def reset(self):
+
         self.deck = Deck.create_standard()
         self.deck.shuffle()
 
-        self.hands = {}
+        hands = {}
 
         for player in self.players:
-            self.hands[player.name] = [
+
+            hands[player.name] = [
                 self.deck.draw(),
                 self.deck.draw(),
                 self.deck.draw(),
@@ -30,46 +33,67 @@ class PokerEnvironment:
                 self.deck.draw(),
             ]
 
-        self.winner = None
-        self.reward = {}
 
-        return self.get_state()
+        self.state = GameState(
+            players=self.players,
+            hands=hands,
+            pot=0,
+            street="preflop"
+        )
 
-    def get_state(self):
+
         return {
-            "hands": self.hands,
-            "players": [
-                player.name
-                for player in self.players
-            ]
-        }
+    "hands": self.state.hands,
+    "players": [
+        player.name
+        for player in self.players
+    ]
+}
+  
+
 
     def evaluate(self):
+
         best_player = None
         best_score = -1
 
+
         for player in self.players:
-            cards = self.hands[player.name]
+
+            cards = self.state.hands[player.name]
 
             result = HandEvaluator.evaluate(cards)
 
+
             if result.score > best_score:
+
                 best_score = result.score
                 best_player = player
 
-        self.winner = best_player
+
+
+        self.state.winner = best_player
+
+
+        self.state.rewards = {}
 
         for player in self.players:
-            self.reward[player.name] = (
-                1 if player == self.winner else -1
+
+            self.state.rewards[player.name] = (
+                1 if player == best_player else -1
             )
 
-        return self.winner
+
+        return best_player
+
+
 
     def step(self):
+
         winner = self.evaluate()
+
 
         return {
             "winner": winner.name,
-            "reward": self.reward
+            "reward": self.state.rewards
         }
