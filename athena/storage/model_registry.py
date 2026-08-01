@@ -46,6 +46,13 @@ class ModelRegistry:
             return None
 
 
+        for model in self.models:
+
+            if model["version"] == self.current_version:
+
+                return model
+
+
         return self.models[-1]
 
 
@@ -89,4 +96,54 @@ class ModelRegistry:
                     model["status"] = "archive"
 
 
+        self.current_version = version
+
+
         return self.champion()
+
+
+
+    def rollback(
+        self,
+        version
+    ):
+
+        target = None
+
+
+        for model in self.models:
+
+            if model["version"] == version:
+
+                target = model
+                break
+
+
+
+        if target is None:
+
+            raise ValueError(
+                "Version not found"
+            )
+
+
+
+        self.current_version = version
+
+
+
+        for model in self.models:
+
+            if model["version"] == version:
+
+                model["status"] = "champion"
+
+            else:
+
+                if model["status"] == "champion":
+
+                    model["status"] = "archive"
+
+
+
+        return target
