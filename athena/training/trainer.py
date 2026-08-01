@@ -5,17 +5,41 @@ class Trainer:
 
     def __init__(
         self,
-        agent,
-        environment,
-        memory
+        agent=None,
+        environment=None,
+        memory=None,
+        dataset=None
     ):
+
+        # Support Trainer(dataset)
+        if (
+            environment is None
+            and memory is None
+            and dataset is None
+            and agent is not None
+            and hasattr(agent, "add")
+        ):
+            dataset = agent
+            agent = None
+
 
         self.agent = agent
         self.environment = environment
         self.memory = memory
+        self.dataset = dataset
 
 
     def run_episode(self):
+
+        if (
+            self.agent is None
+            or self.environment is None
+            or self.memory is None
+        ):
+            raise RuntimeError(
+                "Agent, environment and memory required"
+            )
+
 
         state = self.environment.reset()
 
