@@ -8,7 +8,8 @@ class Trainer:
         agent=None,
         environment=None,
         memory=None,
-        dataset=None
+        dataset=None,
+        callbacks=None
     ):
 
         # Support Trainer(dataset)
@@ -27,6 +28,10 @@ class Trainer:
         self.environment = environment
         self.memory = memory
         self.dataset = dataset
+
+
+        # Callbacks
+        self.callbacks = callbacks or []
 
 
         # Training history
@@ -108,6 +113,12 @@ class Trainer:
         self.stop_reason = None
 
 
+        # callback start
+        for callback in self.callbacks:
+            callback.on_train_start(self)
+
+
+
         for _ in range(episodes):
 
             reward = self.run_episode()
@@ -138,9 +149,28 @@ class Trainer:
 
 
 
+            # callback episode end
+            for callback in self.callbacks:
+                callback.on_episode_end(
+                    self,
+                    self.total_episodes,
+                    reward
+                )
+
+
+
             if improved:
 
                 no_improvement = 0
+
+
+                # callback best model
+                for callback in self.callbacks:
+                    callback.on_best_model(
+                        self,
+                        reward
+                    )
+
 
             else:
 
@@ -158,6 +188,12 @@ class Trainer:
                 self.stop_reason = "No improvement"
 
                 break
+
+
+
+        # callback end
+        for callback in self.callbacks:
+            callback.on_train_end(self)
 
 
 
