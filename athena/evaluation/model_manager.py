@@ -7,12 +7,15 @@ class ModelManager:
     def __init__(
         self,
         champion=None,
-        storage=None
+        storage=None,
+        registry=None
     ):
 
         self.champion = champion
         self.challenger = None
+
         self.storage = storage
+        self.registry = registry
 
 
 
@@ -22,6 +25,61 @@ class ModelManager:
     ):
 
         self.challenger = model
+
+
+
+    def register_challenger(
+        self,
+        reward=0
+    ):
+
+        if self.registry is None:
+
+            raise RuntimeError(
+                "Model registry required"
+            )
+
+
+        if self.challenger is None:
+
+            raise RuntimeError(
+                "No challenger model"
+            )
+
+
+        return self.registry.register(
+            self.challenger,
+            reward=reward
+        )
+
+
+
+    def load(
+        self
+    ):
+
+        if self.storage is None:
+
+            return None
+
+
+        model = self.storage.load()
+
+
+        if model is not None:
+
+            self.champion = model
+
+
+        return self.champion
+
+
+
+    def load_champion(
+        self
+    ):
+
+        return self.load()
 
 
 
@@ -38,32 +96,27 @@ class ModelManager:
 
         self.champion = self.challenger
 
-        self.challenger = None
 
-
-        if self.storage:
+        if self.storage is not None:
 
             self.storage.save(
                 self.champion
             )
 
 
-        return self.champion
+        if self.registry is not None:
+
+            latest = self.registry.latest()
 
 
+            if latest is not None:
 
-    def load_champion(
-        self
-    ):
-
-        if self.storage is None:
-
-            raise RuntimeError(
-                "Storage not configured"
-            )
+                self.registry.promote(
+                    latest["version"]
+                )
 
 
-        self.champion = self.storage.load()
+        self.challenger = None
 
 
         return self.champion
