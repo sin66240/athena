@@ -29,6 +29,23 @@ class Trainer:
         self.dataset = dataset
 
 
+        # Training history
+        self.history = []
+
+
+        # Training metrics
+        self.best_reward = None
+        self.best_episode = None
+        self.last_reward = None
+        self.total_episodes = 0
+
+
+        # Early stopping
+        self.stopped_early = False
+        self.stop_reason = None
+
+
+
     def run_episode(self):
 
         if (
@@ -76,3 +93,100 @@ class Trainer:
 
 
         return total_reward
+
+
+
+    def train(
+        self,
+        episodes,
+        patience=None
+    ):
+
+        no_improvement = 0
+
+        self.stopped_early = False
+        self.stop_reason = None
+
+
+        for _ in range(episodes):
+
+            reward = self.run_episode()
+
+
+            self.history.append(
+                reward
+            )
+
+
+            self.total_episodes += 1
+
+            self.last_reward = reward
+
+
+            improved = False
+
+
+            if (
+                self.best_reward is None
+                or reward > self.best_reward
+            ):
+
+                self.best_reward = reward
+                self.best_episode = self.total_episodes
+
+                improved = True
+
+
+
+            if improved:
+
+                no_improvement = 0
+
+            else:
+
+                no_improvement += 1
+
+
+
+            if (
+                patience is not None
+                and no_improvement >= patience
+            ):
+
+                self.stopped_early = True
+
+                self.stop_reason = "No improvement"
+
+                break
+
+
+
+        return sum(self.history)
+
+
+
+    def average_reward(
+        self
+    ):
+
+        if not self.history:
+            return 0
+
+
+        return sum(self.history) / len(self.history)
+
+
+
+    def reset_history(
+        self
+    ):
+
+        self.history = []
+
+        self.best_reward = None
+        self.best_episode = None
+        self.last_reward = None
+        self.total_episodes = 0
+
+        self.stopped_early = False
+        self.stop_reason = None
