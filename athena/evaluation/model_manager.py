@@ -6,11 +6,13 @@ class ModelManager:
 
     def __init__(
         self,
-        champion=None
+        champion=None,
+        storage=None
     ):
 
         self.champion = champion
         self.challenger = None
+        self.storage = storage
 
 
 
@@ -37,6 +39,31 @@ class ModelManager:
         self.champion = self.challenger
 
         self.challenger = None
+
+
+        if self.storage:
+
+            self.storage.save(
+                self.champion
+            )
+
+
+        return self.champion
+
+
+
+    def load_champion(
+        self
+    ):
+
+        if self.storage is None:
+
+            raise RuntimeError(
+                "Storage not configured"
+            )
+
+
+        self.champion = self.storage.load()
 
 
         return self.champion
