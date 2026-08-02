@@ -14,16 +14,22 @@ class SelfPlayAnalytics:
 
     def wins_by_agent(self):
 
-        result = {}
+     result = {}
 
-        for match in self.matches:
+     for match in self.matches:
 
+        if isinstance(match, dict):
             winner = match.get("winner")
 
-            if winner:
-                result[winner] = result.get(winner,0) + 1
+        else:
+            winner = match.winner
 
-        return result
+
+        if winner:
+            result[winner] = result.get(winner, 0) + 1
+
+
+     return result
 
 
     def win_rate(self):
