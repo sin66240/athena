@@ -19,7 +19,7 @@ class SelfPlayRunnerService:
         )
 
 
-        result = match.play()
+        result = match.run()
 
 
         self.history.add_match_history(
