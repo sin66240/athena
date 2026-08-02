@@ -35,7 +35,6 @@ class PromotionService:
                 challenger
             )
 
-
             self.manager.promote()
 
 
@@ -46,28 +45,58 @@ class PromotionService:
 
 
 
-        champion_score = self.evaluator.evaluate(
-            champion
-        )
+        # Support both old and new evaluator
+        try:
+
+            evaluation = self.evaluator.evaluate(
+                champion,
+                challenger
+            )
 
 
-        challenger_score = self.evaluator.evaluate(
-            challenger
-        )
+        except TypeError:
+
+            champion_score = self.evaluator.evaluate(
+                champion
+            )
+
+
+            challenger_score = self.evaluator.evaluate(
+                challenger
+            )
+
+
+            evaluation = {
+
+                "champion_score": champion_score,
+
+                "challenger_score": challenger_score
+
+            }
 
 
 
+        # Compare result
         comparison = self.comparator.compare(
-            champion_score,
-            challenger_score
+            evaluation
         )
 
 
 
-        decision = self.policy.evaluate(
-            champion_score,
-            challenger_score
-        )
+        # Support both old and new policy
+        if "games" in evaluation:
+
+            decision = self.policy.evaluate_match_result(
+                evaluation
+            )
+
+
+        else:
+
+            decision = self.policy.evaluate(
+                evaluation["champion_score"],
+                evaluation["challenger_score"]
+            )
 
 
 
@@ -82,17 +111,27 @@ class PromotionService:
 
 
             return {
+
                 "promoted": True,
+
                 "reason": "Higher score",
+
                 "comparison": comparison,
+
                 "decision": decision
+
             }
 
 
 
         return {
+
             "promoted": False,
+
             "reason": "Insufficient improvement",
+
             "comparison": comparison,
+
             "decision": decision
+
         }

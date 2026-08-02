@@ -7,8 +7,34 @@ class ModelComparator:
     def compare(
         self,
         champion_score,
-        challenger_score
+        challenger_score=None
     ):
+
+        # รองรับ evaluation dict จาก ModelEvaluator รุ่นใหม่
+        if (
+            challenger_score is None
+            and isinstance(champion_score, dict)
+        ):
+
+            evaluation = champion_score
+
+            if "champion_score" in evaluation:
+
+                champion_score = evaluation["champion_score"]
+                challenger_score = evaluation["challenger_score"]
+
+            else:
+
+                games = evaluation["games"]
+
+                champion_score = (
+                    evaluation["champion_wins"] / games
+                )
+
+                challenger_score = (
+                    evaluation["challenger_wins"] / games
+                )
+
 
         if challenger_score > champion_score:
 

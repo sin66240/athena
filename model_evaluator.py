@@ -1,17 +1,16 @@
 class ModelEvaluator:
     """
-    Compare two models.
+    Evaluate champion vs challenger.
     """
 
-
     def __init__(
-      self,
-      games=100,
-      game_runner=None
-):
+        self,
+        games=100,
+        game_runner=None
+    ):
 
-      self.games = games
-      self.game_runner = game_runner
+        self.games = games
+        self.game_runner = game_runner
 
 
 
@@ -34,35 +33,43 @@ class ModelEvaluator:
 
 
             if result == "champion":
+
                 champion_wins += 1
 
-            else:
+            elif result == "challenger":
+
                 challenger_wins += 1
 
 
 
         return {
+
+            "games": self.games,
+
             "champion_wins": champion_wins,
+
             "challenger_wins": challenger_wins,
+
             "challenger_winrate":
                 challenger_wins / self.games
+
         }
 
 
 
     def play_game(
-       self,
-       champion,
-       challenger
-):
+        self,
+        champion,
+        challenger
+    ):
 
-       if self.game_runner:
+        if self.game_runner:
 
-        return self.game_runner(
-            champion,
-            challenger
-        )
+            return self.game_runner(
+                champion,
+                challenger
+            )
 
 
-    # fallback เดิม
-       return "challenger"
+        # fallback
+        return "champion"

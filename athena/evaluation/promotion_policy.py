@@ -48,3 +48,29 @@ class PromotionPolicy:
             ),
             "minimum_gain": self.minimum_gain
         }
+
+
+
+    def evaluate_match_result(
+        self,
+        result
+    ):
+
+        champion_score = (
+            result["champion_wins"]
+            /
+            result["games"]
+        )
+
+
+        challenger_score = (
+            result["challenger_wins"]
+            /
+            result["games"]
+        )
+
+
+        return self.evaluate(
+            champion_score,
+            challenger_score
+        )
