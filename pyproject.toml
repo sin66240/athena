@@ -1,18 +1,27 @@
 [build-system]
-requires = ["setuptools>=61"]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 
 [project]
-name = "athena"
-version = "0.1.0"
-description = "ATHENA Poker Decision Engine"
+name = "athena-ai"
+version = "0.5.0"
+description = "Modular AI Poker Framework"
+authors = [
+    {name = "sin66240"}
+]
+requires-python = ">=3.10"
+
 
 dependencies = [
+    "numpy",
     "pandas",
     "scikit-learn"
 ]
 
 
 [tool.pytest.ini_options]
-pythonpath = "."
+testpaths = [
+    "tests"
+]
+pythonpath = ["."]
