@@ -5,9 +5,16 @@ from athena.selfplay.runner_service import SelfPlayRunnerService
 class SelfPlayGeneration:
 
 
-    def __init__(self):
+    def __init__(
+        self,
+        runner=None
+    ):
 
-        self.runner = SelfPlayRunnerService()
+        if runner is None:
+
+            runner = SelfPlayRunnerService()
+
+        self.runner = runner
 
 
 
