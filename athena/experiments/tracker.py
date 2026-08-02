@@ -1,6 +1,6 @@
-class ExperimentTracker:
+class Tracker:
     """
-    Store and retrieve experiments.
+    Tracks experiment results.
     """
 
 
@@ -12,6 +12,17 @@ class ExperimentTracker:
 
 
 
+    def log(
+        self,
+        experiment_result
+    ):
+
+        self.experiments.append(
+            experiment_result
+        )
+
+
+
     def save(
         self,
         experiment
@@ -20,8 +31,6 @@ class ExperimentTracker:
         self.experiments.append(
             experiment
         )
-
-        return experiment
 
 
 
@@ -43,3 +52,32 @@ class ExperimentTracker:
 
 
         return self.experiments[-1]
+
+
+
+    def best(
+        self,
+        metric
+    ):
+
+        if not self.experiments:
+
+            return None
+
+
+        return max(
+            self.experiments,
+            key=lambda x: x.metrics.get(
+                metric,
+                float("-inf")
+            )
+        )
+
+
+
+class ExperimentTracker(Tracker):
+    """
+    Backward compatible tracker.
+    """
+
+    pass
