@@ -20,9 +20,8 @@ class MatchHistory:
     elo_a_after: float
     elo_b_after: float
 
-    episodes: int
-
     timestamp: str
+    episodes: int = 1
 
 
 
