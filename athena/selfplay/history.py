@@ -1,5 +1,5 @@
 from dataclasses import dataclass, asdict
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import List, Dict, Any
 
 
@@ -63,7 +63,7 @@ class SelfPlayHistory:
 
             elo_b_after=elo_b_after,
 
-            timestamp=datetime.utcnow().isoformat()
+            timestamp=datetime.now(UTC).isoformat()
 
         )
 
