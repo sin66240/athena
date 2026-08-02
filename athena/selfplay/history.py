@@ -1,4 +1,4 @@
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from datetime import datetime, UTC
 from typing import List, Dict, Any
 
@@ -20,9 +20,11 @@ class MatchHistory:
     elo_a_after: float
     elo_b_after: float
 
-    timestamp: str
     episodes: int = 1
-
+    
+    timestamp: str = field(
+        default_factory=lambda: datetime.now(UTC).isoformat()
+    )
 
 
 class SelfPlayHistory:
@@ -176,11 +178,9 @@ class SelfPlayHistory:
 
             elo_b_after=elo_b_after,
 
-            episodes=episodes,
-
-            timestamp=datetime.now(
-                UTC
-            ).isoformat()
+            episodes=episodes
+            
+            # ไม่ต้องส่ง timestamp แล้ว ปล่อยให้ default_factory จัดการ
 
         )
 

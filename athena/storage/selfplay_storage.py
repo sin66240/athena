@@ -54,6 +54,8 @@ class SelfPlayStorage:
 
                 elo_b_after REAL,
 
+                episodes INTEGER,
+
                 timestamp TEXT
 
             )
@@ -64,6 +66,13 @@ class SelfPlayStorage:
         conn.commit()
 
         conn.close()
+
+
+
+    # compatibility layer
+    def save(self, match: MatchHistory):
+
+        return self.save_match(match)
 
 
 
@@ -90,11 +99,12 @@ class SelfPlayStorage:
                 elo_b_before,
                 elo_a_after,
                 elo_b_after,
+                episodes,
                 timestamp
 
             )
 
-            VALUES (?,?,?,?,?,?,?,?,?,?)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?)
 
             """,
 
@@ -109,6 +119,7 @@ class SelfPlayStorage:
                 data["elo_b_before"],
                 data["elo_a_after"],
                 data["elo_b_after"],
+                data.get("episodes", 1),
                 data["timestamp"]
 
             )
@@ -118,6 +129,9 @@ class SelfPlayStorage:
         conn.commit()
 
         conn.close()
+
+
+        return match
 
 
 
@@ -131,6 +145,7 @@ class SelfPlayStorage:
         cursor.execute(
             """
             SELECT
+
             model_a,
             model_b,
             winner,
@@ -140,11 +155,13 @@ class SelfPlayStorage:
             elo_b_before,
             elo_a_after,
             elo_b_after,
+            episodes,
             timestamp
 
             FROM matches
 
             ORDER BY id ASC
+
             """
         )
 
