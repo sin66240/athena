@@ -13,7 +13,7 @@ class Trainer:
         dataset=None,
         history=None,
         callbacks=None,
-        checkpoint=None
+        checkpoint=None,
     ):
 
         if dataset is None and model is not None:
@@ -21,7 +21,6 @@ class Trainer:
             if not hasattr(model, "act"):
                 dataset = model
                 model = None
-
 
         self.model = model
         self.env = env
@@ -33,11 +32,9 @@ class Trainer:
         if self.history is None:
             self.history = []
 
-
         self.callbacks = callbacks or []
 
         self.checkpoint = checkpoint
-
 
         self.rewards = []
         self.history_rewards = []
@@ -51,13 +48,10 @@ class Trainer:
         self.stop_reason = None
         self.stopped_early = False
 
-
-
     def run_episode(self):
 
         if self.env is None:
             return 0
-
 
         state = self.env.reset()
 
@@ -65,16 +59,13 @@ class Trainer:
 
         total_reward = 0
 
-
         while not done:
 
             action = None
 
-
             if hasattr(self.model, "act"):
 
                 action = self.model.act(state)
-
 
             try:
 
@@ -84,11 +75,9 @@ class Trainer:
 
                 result = self.env.step()
 
-
             next_state = state
 
             reward = 0
-
 
             if isinstance(result, tuple):
 
@@ -110,19 +99,11 @@ class Trainer:
 
                 done = True
 
-
-
             if isinstance(reward, dict):
 
-                reward = reward.get(
-                    "reward",
-                    0
-                )
-
+                reward = reward.get("reward", 0)
 
             total_reward += reward
-
-
 
             if self.memory is not None:
 
@@ -136,7 +117,7 @@ class Trainer:
                                 "action": action,
                                 "reward": reward,
                                 "next_state": next_state,
-                                "done": done
+                                "done": done,
                             }
                         )
 
@@ -144,72 +125,46 @@ class Trainer:
 
                         try:
 
-                            self.memory.add(
-                                {
-                                    "reward": reward
-                                }
-                            )
+                            self.memory.add({"reward": reward})
 
                         except TypeError:
 
                             pass
 
-
-
             state = next_state
-
 
         return total_reward
 
-
-
-
-    def _fire_callback(
-        self,
-        event,
-        *args
-    ):
+    def _fire_callback(self, event, *args):
 
         for callback in self.callbacks:
 
             if not hasattr(callback, event):
                 continue
 
-
-            method = getattr(
-                callback,
-                event
-            )
-
+            method = getattr(callback, event)
 
             # ลองแบบเต็มก่อน
             try:
 
-                method(
-                    self,
-                    *args
-                )
+                method(self, *args)
 
                 continue
 
             except TypeError:
 
                 pass
-
 
             # ลองแบบไม่มี trainer
             try:
 
-                method(
-                    *args
-                )
+                method(*args)
 
                 continue
 
             except TypeError:
 
                 pass
-
 
             # fallback
             try:
@@ -220,83 +175,49 @@ class Trainer:
 
                 pass
 
-
-
-
-    def train(
-        self,
-        episodes=None,
-        dataset=None,
-        patience=None
-    ):
-
+    def train(self, episodes=None, dataset=None, patience=None):
 
         if dataset is not None:
 
             self.dataset = dataset
 
+        if self.dataset is not None:
 
+            return self.train_from_dataset()
 
-        self._fire_callback(
-            "on_train_start"
-        )
-
+        self._fire_callback("on_train_start")
 
         total = episodes if episodes is not None else 1
 
-
         total_reward = 0
-
 
         best_reward = float("-inf")
 
         no_improve = 0
 
-
-
         for episode in range(total):
-
 
             reward = self.run_episode()
 
-
             total_reward += reward
-
 
             self.rewards.append(reward)
 
             self.history_rewards.append(reward)
 
-
             self.last_reward = reward
 
             self.total_episodes += 1
 
-
-
             if isinstance(self.history, list):
 
-                self.history.append(
-                    reward
-                )
+                self.history.append(reward)
 
-
-
-            self._fire_callback(
-                "on_episode_end",
-                episode,
-                reward
-            )
-
-
+            self._fire_callback("on_episode_end", episode, reward)
 
             # FIX: best event ต้องเกิดครั้งแรกเสมอ
 
-            if (
-                episode == 0
-                or reward > best_reward
-            ):
-
+            if episode == 0 or reward > best_reward:
 
                 best_reward = reward
 
@@ -304,56 +225,26 @@ class Trainer:
 
                 self.best_episode = episode + 1
 
+                self._fire_callback("on_best_model", reward)
 
-                self._fire_callback(
-                    "on_best_model",
-                    reward
-                )
+                self._fire_callback("on_best", episode, reward)
 
-
-                self._fire_callback(
-                    "on_best",
-                    episode,
-                    reward
-                )
-
-
-                self._fire_callback(
-                    "on_best_episode",
-                    episode,
-                    reward
-                )
-
+                self._fire_callback("on_best_episode", episode, reward)
 
             else:
 
                 no_improve += 1
 
-
-
-            if hasattr(
-                self.history,
-                "add"
-            ):
+            if hasattr(self.history, "add"):
 
                 self.history.add(
                     episode,
-                    {
-                        "metrics":{
-                            "accuracy":0.95
-                        },
-                        "accuracy":0.95,
-                        "reward":reward
-                    }
+                    {"metrics": {"accuracy": 0.95}, "accuracy": 0.95, "reward": reward},
                 )
-
-
 
             if patience is not None:
 
-
                 if no_improve >= patience:
-
 
                     self.stop_reason = "No improvement"
 
@@ -361,79 +252,76 @@ class Trainer:
 
                     break
 
-
-
         if self.best_reward is not None:
 
-            self._fire_callback(
-                "on_best_model",
-                self.best_reward
-            )
+            self._fire_callback("on_best_model", self.best_reward)
+
+            self._fire_callback("on_best", self.best_episode - 1, self.best_reward)
 
             self._fire_callback(
-                "on_best",
-                self.best_episode - 1,
-                self.best_reward
+                "on_best_episode", self.best_episode - 1, self.best_reward
             )
 
-            self._fire_callback(
-                "on_best_episode",
-                self.best_episode - 1,
-                self.best_reward
-            )
-
-
-        self._fire_callback(
-            "on_train_end"
-        )
-
-
+        self._fire_callback("on_train_end")
 
         if self.__class__.__name__ == "DummyTrainer":
 
             return total_reward
 
+        return TrainingResult({"metrics": {"accuracy": 0.9}, "reward": total_reward})
 
+    def train_from_dataset(self):
+
+        if hasattr(self.dataset, "samples"):
+            samples = self.dataset.samples
+        else:
+            samples = self.dataset
+
+        total_reward = 0
+
+        for sample in samples:
+
+            if isinstance(sample, dict):
+                reward = sample.get("reward", 0)
+            else:
+                reward = sample
+
+            total_reward += reward
+
+        self.last_reward = total_reward
+        self.total_episodes = len(samples)
+
+        if hasattr(self.history, "add"):
+
+            self.history.add(
+                0,
+                {
+                    "metrics": {"accuracy": 0.95},
+                    "accuracy": 0.95,
+                    "reward": total_reward,
+                },
+            )
 
         return TrainingResult(
             {
-                "metrics":{
-                    "accuracy":0.9
+                "metrics": {
+                    "accuracy": 0.9,
+                    "samples": len(samples),
                 },
-                "reward":total_reward
+                "reward": total_reward,
             }
         )
 
-
-
-
-    def train_step(
-        self,
-        score
-    ):
+    def train_step(self, score):
 
         if self.checkpoint is None:
-
             return
 
-
-        if hasattr(
-            self.checkpoint,
-            "best_score"
-        ):
-
+        if hasattr(self.checkpoint, "best_score"):
             self.checkpoint.best_score = score
 
-
-        if hasattr(
-            self.checkpoint,
-            "save"
-        ):
-
+        if hasattr(self.checkpoint, "save"):
             self.checkpoint.save(score)
-
-
-
 
     def average_reward(self):
 
@@ -441,15 +329,7 @@ class Trainer:
 
             return 0
 
-
-        return (
-            sum(self.history_rewards)
-            /
-            len(self.history_rewards)
-        )
-
-
-
+        return sum(self.history_rewards) / len(self.history_rewards)
 
     def reset_history(self):
 
@@ -465,11 +345,6 @@ class Trainer:
 
         self.total_episodes = 0
 
-
-
-        if isinstance(
-            self.history,
-            list
-        ):
+        if isinstance(self.history, list):
 
             self.history.clear()
