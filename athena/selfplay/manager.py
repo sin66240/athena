@@ -1,5 +1,6 @@
 from athena.selfplay.history import SelfPlayHistory
 from athena.selfplay.analytics import SelfPlayAnalytics
+from athena.experience.experience_builder import ExperienceBuilder
 
 
 class SelfPlayManager:
@@ -7,10 +8,12 @@ class SelfPlayManager:
     Controls multiple self-play episodes.
     """
 
+
     def __init__(
         self,
         runner,
-        storage_service=None
+        storage_service=None,
+        replay_buffer=None
     ):
 
         self.runner = runner
@@ -20,6 +23,10 @@ class SelfPlayManager:
         self.analytics = SelfPlayAnalytics()
 
         self.storage_service = storage_service
+
+        self.replay_buffer = replay_buffer
+
+        self.experience_builder = ExperienceBuilder()
 
 
 
@@ -39,6 +46,18 @@ class SelfPlayManager:
             results.append(
                 result
             )
+
+
+            # บันทึกประสบการณ์เข้า Replay Buffer
+            if self.replay_buffer:
+
+                experience = self.experience_builder.build(
+                    result
+                )
+
+                self.replay_buffer.add(
+                    experience
+                )
 
 
             # บันทึกประวัติการแข่งขัน
